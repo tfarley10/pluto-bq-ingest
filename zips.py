@@ -8,6 +8,9 @@ import os
 
 
 def temp_sub(file):
+
+    """Makes a subdirectory in the existing temporary directory to unzip a file"""
+
     new_dir = file.strip('.zip')
     if not os.path.exists(new_dir):
         os.makedirs(new_dir)
@@ -15,20 +18,28 @@ def temp_sub(file):
     return(new_dir)
 
 def dir_dic(zip_list):
+
+    """Creates tmp directories for zipfiles, creates dictionary for zipfile -> directory"""
     zip_dir = [temp_sub(x) for x in zip_list]
-    foo = dict(zip(zip_list, zip_dir))
-    return(foo)
+    zip_dict = dict(zip(zip_list, zip_dir))
+    return(zip_dict)
 
 def unzip_child(zip_list):
     
-    bar = dir_dic(zip_list)
+    zip_dict = dir_dic(zip_list)
 
-    for x, y in bar.items():
-        with ZipFile(x) as zfile:
+    for file, dir in zip_dict.items():
+        with ZipFile(file) as zfile:
             print("Unzipping children")
-            zfile.extractall(y)
+            zfile.extractall(dir)
 
 def unzip_to_temp(zipurl):
+
+    """
+
+    :param zipurl: url of MapPluto Zip file
+    :return: temporary directory of unzipped shapefiles
+    """
 
     dir = mkdtemp()
 
@@ -37,19 +48,14 @@ def unzip_to_temp(zipurl):
         with ZipFile(BytesIO(zipresp.read())) as zfile:
             print("Unzipping file")
             zfile.extractall(dir)
+
+    # does the shapefile contain more zipfiles?
     child_zips = list_all_files(dir, ['zip'])
     if len(child_zips) >0:
         unzip_child(child_zips)
 
     return(dir)
     
-
-"""
-    shapes = list_all_files(dir, ['shp'])
-    clipped_only = lambda x: x.lower('(?!.*unclipped)'
-    shapes = re.findall('(?!.*unclipped)')
-    metadata = list_all_files(dir, ['pdf', 'htm'])
-"""
 
 
 

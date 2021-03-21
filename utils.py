@@ -8,11 +8,19 @@ def get_ext(path):
     return path.rsplit('.', 1)[1].lower()
 
 
-def list_all_files(filepath, filetypes):
+def list_all_files(dir:str, filetypes:list):
+
+    """
+
+    :param dir: directory to walk
+    :param filetypes: list of filetypes that should be returned (eg. [pdf,htm])
+    :return: list of paths to files specified by filetypes
+    """
+
     filetypes = [types.lower() for types in filetypes]
     paths = []
     get_ext = lambda x: x.rsplit('.', 1)[1].lower()
-    for root, dirs, files in os.walk(filepath):
+    for root, dirs, files in os.walk(dir):
         for file in files:
             if get_ext(file) in filetypes:
                 paths.append(os.path.join(root, file))
@@ -29,6 +37,40 @@ def nrows(path):
 def file_name(path):
     return path.rsplit('/',1)[1]
 
+
+def make_chunks(gf_rows, size=5 * 10 ** 4):
+
+    """
+
+    :param gf_rows: number of rows in spatial data file
+    :param size: # of rows to read in each slice
+    :return: list of slices that will `chunk` the file read
+    """
+    starts = list(range(0, gf_rows, size))
+    ends = list(range(size, gf_rows + size, size))
+    slices = [slice(start, end, 1) for start, end in zip(starts, ends)]
+    return (slices)
+
+
+def read_chunks(path):
+
+    """
+
+    :param path: path to spatial file
+    :return: geodataframe
+    """
+    with open(path) as g:
+        rows = len(g)
+
+    chunks = make_chunks(rows)
+    name = file_name(path)
+
+    for c in chunks:
+        print(f'reading from {c.start} to {c.stop} rows from {name}')
+        d = [gpd.read_file(path, rows=c)]
+    d = pd.concat(d)
+    return (d)
+
 def read_shapefile(path):
     t0 = time()
     file = file_name(path)
@@ -39,19 +81,3 @@ def read_shapefile(path):
     print(f"Reading {file} took {delta} minutes")
     return(f)
 
-"""
-    def read_shapefile(self):
-        t0 = time()
-        if self.chunks == None:
-            print(f"{self.filename} is only {self.nrows} rows long, reading all at once")
-            f = gpd.read_file(self.path)
-            delta = round((time()-t0)/60,2)
-            print(f"Reading {self.filename} took {delta} minutes")
-            return(f)
-        else:
-            l = [*map(self.read_chunk, self.chunks)]
-            l = pd.concat(l)
-            delta = round((time()-t0)/60,2)
-            print(f"Reading {self.filename} took {delta} minutes")
-            return (l)
-"""
