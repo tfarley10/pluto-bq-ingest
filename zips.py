@@ -24,16 +24,19 @@ def dir_dic(zip_list):
     zip_dict = dict(zip(zip_list, zip_dir))
     return(zip_dict)
 
-def unzip_child(zip_list):
+def unzip_child(zip_list, extract = True):
     
     zip_dict = dir_dic(zip_list)
 
     for file, dir in zip_dict.items():
         with ZipFile(file) as zfile:
-            print("Unzipping children")
-            zfile.extractall(dir)
+            if not extract:
+                return(zfile.namelist())
+            else:
+                print("Unzipping children")
+                zfile.extractall(dir)
 
-def unzip_to_temp(zipurl):
+def unzip_to_temp(zipurl, extract = True):
 
     """
 
@@ -46,8 +49,13 @@ def unzip_to_temp(zipurl):
     with urlopen(zipurl) as zipresp:
         print(f"Downloading ZIPFile {zipurl}")
         with ZipFile(BytesIO(zipresp.read())) as zfile:
-            print("Unzipping file")
-            zfile.extractall(dir)
+            if not extract:
+                files = zfile.namelist()
+                return files
+            else:
+
+                print("Unzipping file")
+                zfile.extractall(dir)
 
     # does the shapefile contain more zipfiles?
     child_zips = list_all_files(dir, ['zip'])
