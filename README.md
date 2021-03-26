@@ -12,7 +12,9 @@
 
 ## TODO:
 
-1. Scrape and load all htm and pdf metadata files into storage
+1. Write transformed shapefiles to parquet instead of csv
+2. Write bash script to make [external bq tables](https://medium.com/google-cloud/loading-and-transforming-data-into-bigquery-using-dbt-65307ad401cd)
+2. Scrape and load all htm and pdf metadata files into storage
    - see if there is a way to get the metadata into tabular form to load as tables for easier lookups
 2. Connect to dbt and start modelling
 3. Document code better
