@@ -6,22 +6,30 @@ import pandas as pd
 
 zip_files = pd.read_csv('./etc/zip_links.csv')
 
-f_file_name = lambda x: x.rsplit("/", 1)[1]
-is_terminal = lambda x: bool(re.findall('[.]', x))
-terminal_filter = lambda x: [*filter(is_terminal,x)]
-file_to_df = lambda files, year: pd.DataFrame({'file': files, 'year': year})
+
+def f_file_name(path: str):
+    return path.rsplit("/", 1)[1]
+
+
+def is_terminal(path: str):
+    return bool(re.findall('[.]', path))
+
+
+def terminal_filter(paths: list):
+    return [*filter(is_terminal, paths)]
+
+
+def make_paths_df(paths: list, year):
+    return pd.DataFrame({'file': terminal_filter(paths), 'year': year})
 
 
 def zip_names(p):
     with urlopen(p.path) as zipresp:
         print(f"downloading {f_file_name(p.path)}")
         with ZipFile(BytesIO(zipresp.read())) as zfile:
-            return terminal_filter(zfile.namelist()), p.year
+            return make_paths_df(zfile.namelist(), p.year)
 
-def main(p):
-    files, year = zip_names(p)
-    return file_to_df(files, year)
 
-files = zip_files.apply(main, axis = 1)
+files = zip_files.apply(zip_names, axis=1)
 file_df = pd.concat(files.values.tolist())
-file_df.to_csv('./etc/pluto_files_agg.csv', index = False)
+file_df.to_csv('./etc/pluto_files_agg.csv', index=False)
