@@ -50,15 +50,32 @@ def transform_gdf(gdf: gpd.GeoDataFrame):
 
 
 def read_transform(path: str, chunk: slice):
+    
     chunk_gdf = read_chunk(path, chunk)
+    
     return transform_gdf(chunk_gdf)
 
-#
-# def agg_from_path(file_path):
-#     chunks = make_chunks(file_path)
-#     read_t = [read_transform()
-#
-#     return pd.concat(list(map(read_t, chunks)))
+
+
+
+def agg_from_path(file_path):
+    chunks = make_chunks(file_path)
+    read_t = [read_transform(path = file_path, chunk = c) for c in chunks]
+
+    return read_t
+
+def agg_from_paths(file_paths:list):
+    
+    if len(file_paths) == 1:
+        out = agg_from_path(file_paths[0])
+        out = pd.concat(out, ignore_index = True)
+        return out
+    else:
+        out = [agg_from_path(f) for f in file_paths]
+        out = [pd.concat(g) for g in out]
+        out = pd.concat(out, ignore_index = True)
+        return out
+        
 
 
 
